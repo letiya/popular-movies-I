@@ -11,19 +11,19 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
         <TextView
             android:id="@+id/tv_movie_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="30sp"
-            android:textColor="#FFFFFF"
-            android:background="#82B1FF"
-            android:paddingLeft="20dp"
-            android:paddingTop="25dp"
-            android:paddingBottom="25dp"
-            android:paddingRight="20dp"
+            android:textSize="@dimen/text_sz_large"
+            android:textColor="@color/colorWhite"
+            android:background="@color/colorBlueA100"
+            android:paddingLeft="@dimen/padding_20"
+            android:paddingTop="@dimen/padding_25"
+            android:paddingBottom="@dimen/padding_25"
+            android:paddingRight="@dimen/padding_20"
             tools:text="Movie title"
             />
 
@@ -44,16 +44,17 @@
                 android:id="@+id/iv_image_thumbnail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingLeft="20dp"
-                android:paddingTop="5dp"
+                android:paddingLeft="@dimen/padding_20"
+                android:paddingRight="@dimen/padding_20"
+                android:paddingTop="@dimen/padding_5"
                 />
 
             <TextView
                 android:id="@+id/tv_movie_release_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:paddingTop="5dp"
+                android:textSize="@dimen/text_sz_medium"
+                android:paddingTop="@dimen/padding_5"
                 app:layout_constraintLeft_toRightOf="@+id/vertical_middle"
                 tools:text="Movie release date"
                 />
@@ -62,8 +63,8 @@
                 android:id="@+id/tv_movie_voteAvg"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:paddingTop="5dp"
+                android:textSize="@dimen/text_sz_small"
+                android:paddingTop="@dimen/padding_5"
                 app:layout_constraintLeft_toRightOf="@+id/vertical_middle"
                 app:layout_constraintTop_toBottomOf="@+id/tv_movie_release_date"
                 tools:text="Movie vote AVG"
@@ -75,8 +76,9 @@
             android:id="@+id/tv_movie_overview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="10dp"
-            android:paddingTop="20dp"
+            android:paddingLeft="@dimen/padding_10"
+            android:paddingRight="@dimen/padding_10"
+            android:paddingTop="@dimen/padding_20"
             tools:text="Movie overview"
             />
 
