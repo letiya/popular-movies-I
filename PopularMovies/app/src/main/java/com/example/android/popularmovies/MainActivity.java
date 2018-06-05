@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -18,18 +17,18 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.example.android.popularmovies.model.Movie;
-import com.example.android.popularmovies.utilities.MovieJsonUtils;
-import com.example.android.popularmovies.utilities.NetworkUtils;
+import com.example.android.popularmovies.utilities.MovieFetcher;
 
-import java.net.URL;
-
-public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterOnClickHandler, SharedPreferences.OnSharedPreferenceChangeListener {
+public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterOnClickHandler, SharedPreferences.OnSharedPreferenceChangeListener, MovieFetcher.MovieFetcherDisplayHandler {
 
     private TextView mErrorMessageDisplay;
     private RecyclerView mRecyclerView;
     private MovieAdapter mMovieAdapter;
 
-    private static boolean PREFERENCES_HAVE_BEEN_UPDATE = false;
+    private static boolean preferences_have_been_update = false;
+
+    private MovieFetcher mMovieFetcher;
+    private static final int MOVIE_LOADER_ID = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
         mRecyclerView.setAdapter(mMovieAdapter);
 
+        mMovieFetcher = new MovieFetcher(this, mMovieAdapter, this);
         loadMovieData();
 
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
@@ -85,15 +85,16 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        PREFERENCES_HAVE_BEEN_UPDATE = true;
+        preferences_have_been_update = true;
+        mMovieFetcher.sortingChanged();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        if (PREFERENCES_HAVE_BEEN_UPDATE) {
+        if (preferences_have_been_update) {
             loadMovieData();
-            PREFERENCES_HAVE_BEEN_UPDATE = false;
+            preferences_have_been_update = false;
         }
     }
 
@@ -118,6 +119,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         return nColumns;
     }
 
+    /**
+     * Check if cell phone is connected to the internet.
+     * @return true if it is connected. False otherwise.
+     */
     private boolean isOnline() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(this.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
@@ -126,45 +131,22 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
     private void loadMovieData() {
         if (isOnline()) {
-            new FetchNetworkRequest().execute();
+            getSupportLoaderManager().initLoader(MOVIE_LOADER_ID, null, mMovieFetcher);
         } else {
             showErrorMessage();
         }
     }
 
-    private class FetchNetworkRequest extends AsyncTask<String, Void, Movie[]> {
-
-        @Override
-        protected Movie[] doInBackground(String... params) {
-            URL movieRequestUrl = NetworkUtils.buildUrl(MainActivity.this);
-            try {
-                String jsonMovieResponse = NetworkUtils.getResponseFromHttpUrl(movieRequestUrl);
-                Movie[] movies = MovieJsonUtils.parseMovieJson(jsonMovieResponse);
-                return movies;
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Movie[] movies) {
-            mMovieAdapter.setmMovieData(movies);
-            if (movies == null) {
-                showErrorMessage();
-            } else {
-                showMovieDataView();
-            }
-        }
-    }
-
-    private void showErrorMessage() {
+    @Override
+    public void showErrorMessage() {
         /* First, hide the currently visible data */
         mRecyclerView.setVisibility(View.INVISIBLE);
         /* Then, show the error */
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
-    private void showMovieDataView() {
+
+    @Override
+    public void showMovieDataView() {
         /* First, make sure the error is invisible */
         mErrorMessageDisplay.setVisibility(View.INVISIBLE);
         /* Then, make sure the weather data is visible */
