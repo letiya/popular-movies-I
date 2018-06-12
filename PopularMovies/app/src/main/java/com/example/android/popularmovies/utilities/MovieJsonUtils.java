@@ -3,6 +3,7 @@ package com.example.android.popularmovies.utilities;
 import android.util.Log;
 
 import com.example.android.popularmovies.model.Movie;
+import com.example.android.popularmovies.model.MovieReview;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,6 +31,10 @@ public class MovieJsonUtils {
     private static final String JSON_ADULT = "adult";
     private static final String JSON_OVERVIEW = "overview";
     private static final String JSON_RELEASE_DATE = "release_date";
+
+    private static final String JSON_VIDEO_KEY = "key";
+    private static final String JSON_AUTHOR = "author";
+    private static final String JSON_REVIEW = "content";
 
     /**
      * Parse a json String and store information to each movie object.
@@ -94,5 +99,48 @@ public class MovieJsonUtils {
             Log.e(TAG, "Invalid JSONObject arg!");
         }
         return movie;
+    }
+
+    public static void parseMovieVideoJson(String json, Movie movie) {
+        if (json == null) {
+            return;
+        }
+        try {
+            JSONObject jsonObject = new JSONObject(json);
+            JSONArray movieVideoArray = jsonObject.getJSONArray(JSON_RESULTS);
+            ArrayList<String> videoKeys = new ArrayList<String>();
+            for (int i = 0; i < movieVideoArray.length(); i++) {
+                JSONObject videosInfo = movieVideoArray.getJSONObject(i);
+                String videoKey = videosInfo.getString(JSON_VIDEO_KEY);
+                if (videoKey != null) {
+                    videoKeys.add(videoKey);
+                }
+            }
+            movie.setVideoKey(videoKeys);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void parseMovieReviewJson(String json, Movie movie) {
+        if (json == null) {
+            return;
+        }
+        try {
+            JSONObject jsonObject = new JSONObject(json);
+            JSONArray movieReviewArray = jsonObject.getJSONArray(JSON_RESULTS);
+            ArrayList<MovieReview> reviews = new ArrayList<MovieReview>();
+            for (int i = 0; i < movieReviewArray.length(); i++) {
+                JSONObject reviewsInfo = movieReviewArray.getJSONObject(i);
+                String author = reviewsInfo.getString(JSON_AUTHOR);
+                String review = reviewsInfo.getString(JSON_REVIEW);
+                if (author != null && review != null) {
+                    reviews.add(new MovieReview(author, review));
+                }
+            }
+            movie.setReview(reviews);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }

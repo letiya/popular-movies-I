@@ -12,7 +12,8 @@ public class Movie implements Parcelable {
     private double voteAvg, popularity;
     private String title, posterPath, originalLanguage, originalTitle, backdropPath, overview, releaseDate;
     private List<Double> genreIds;
-
+    private List<String> videoKeys;
+    private List<MovieReview> reviews;
 
     /*
      *  This constructor will read in Movie attributes.
@@ -172,6 +173,22 @@ public class Movie implements Parcelable {
 
     public void setReleaseDate(String releaseDate) {
         this.releaseDate = releaseDate;
+    }
+
+    public List<String> getVideoKey() {
+        return videoKeys;
+    }
+
+    public void setVideoKey(List<String> videoKeys) {
+        this.videoKeys = videoKeys;
+    }
+
+    public List<MovieReview> getReview() {
+        return reviews;
+    }
+
+    public void setReview(List<MovieReview> reviews) {
+        this.reviews = reviews;
     }
 
     @Override

@@ -24,11 +24,14 @@ public class NetworkUtils {
     private static final String URL_PATH_TOP_RATED = "top_rated";
     private static final String API_KEY_PARAM = "api_key";
 
+    private static final String TAG_VIDEOS = "videos";
+    private static final String TAG_REVIEWS = "reviews";
+
     /**
      * This method builds the URL used to talk to movie db server.
      * @return a URL to query the movie server.
      */
-    public static URL buildUrl(Context context) {
+    public static URL buildMovieSummaryUrl(Context context) {
         String sortBy; // sortBy the most popular, or by top rated movie.
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -54,11 +57,56 @@ public class NetworkUtils {
         URL url = null;
         try {
             url = new URL(uri.toString());
+            return url;
         } catch (MalformedURLException e) {
             e.printStackTrace();
             Log.e(TAG, "Invalid uri: " + uri);
+            return null;
         }
-        return url;
+    }
+
+    public static URL buildMovieVideoUrl(int movieId) {
+        Uri uri = Uri.parse(MOVIE_BASE_URL)
+                .buildUpon()
+                .appendPath(Integer.toString(movieId))
+                .appendPath(TAG_VIDEOS)
+                .appendQueryParameter(API_KEY_PARAM, MovieAPI.API_KEY)
+                .build();
+
+        if (uri == null) {
+            return null;
+        }
+        URL url = null;
+        try {
+            url = new URL(uri.toString());
+            return url;
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            Log.e(TAG, "Invalid uri: " + uri);
+            return null;
+        }
+    }
+
+    public static URL buildMovieReviewUrl(int movieId) {
+        Uri uri = Uri.parse(MOVIE_BASE_URL)
+                .buildUpon()
+                .appendPath(Integer.toString(movieId))
+                .appendPath(TAG_REVIEWS)
+                .appendQueryParameter(API_KEY_PARAM, MovieAPI.API_KEY)
+                .build();
+
+        if (uri == null) {
+            return null;
+        }
+        URL url = null;
+        try {
+            url = new URL(uri.toString());
+            return url;
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            Log.e(TAG, "Invalid uri: " + uri);
+            return null;
+        }
     }
 
     /**

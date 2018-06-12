@@ -79,8 +79,56 @@
             android:paddingLeft="@dimen/padding_10"
             android:paddingRight="@dimen/padding_10"
             android:paddingTop="@dimen/padding_20"
+            android:paddingBottom="@dimen/padding_5"
             tools:text="Movie overview"
             />
+        
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginLeft="@dimen/padding_10"
+            android:layout_marginRight="@dimen/padding_10"
+            android:background="@android:color/darker_gray"/>
+
+
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/tv_trailer_title"
+                android:text="@string/trailers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_sz_medium"
+                android:paddingLeft="@dimen/padding_10"
+                android:paddingRight="@dimen/padding_10"
+                android:paddingTop="@dimen/padding_5"
+                android:paddingBottom="@dimen/padding_5"
+                tools:text="Trailers: "
+                />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recyclerview_movie_trailer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_constraintLeft_toRightOf="@id/tv_trailer_title"
+                app:layout_constraintTop_toBottomOf="@id/tv_trailer_title"
+                />
+
+            <TextView
+                android:id="@+id/tv_error_message_display"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/padding_16"
+                android:text="@string/error_message"
+                android:textSize="@dimen/text_sz_medium"
+                android:visibility="invisible"
+                app:layout_constraintLeft_toRightOf="@id/tv_trailer_title"
+                app:layout_constraintTop_toBottomOf="@id/tv_trailer_title"
+                />
+
+        </android.support.constraint.ConstraintLayout>
 
     </LinearLayout>
 
