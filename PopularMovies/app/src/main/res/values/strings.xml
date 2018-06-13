@@ -17,5 +17,6 @@
     <string name="pref_sorting_top_rated">top rated</string>
     
     <string name="trailers">Trailers: </string>
-    
+    <string name="reviews">Reviews: </string>
+
 </resources>

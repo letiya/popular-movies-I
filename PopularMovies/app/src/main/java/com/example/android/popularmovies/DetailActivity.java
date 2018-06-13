@@ -9,9 +9,11 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.android.popularmovies.model.Movie;
+import com.example.android.popularmovies.utilities.MovieReviewFetcher;
 import com.example.android.popularmovies.utilities.MovieVideoFetcher;
 import com.squareup.picasso.Picasso;
 
@@ -27,8 +29,12 @@ public class DetailActivity extends AppCompatActivity {
 
     private RecyclerView mTrailerRecyclerView;
     private MovieTrailerAdapter mTrailerAdapter;
-    private MovieVideoFetcher movieVideoFetcher;
+    private MovieVideoFetcher mMovieVideoFetcher;
     private static final int TRAILER_LOADER_ID = 1;
+
+    private LinearLayout mLinearLayout;
+    private MovieReviewFetcher mMovieReviewFetcher;
+    private static final int REVIEW_LOADER_ID = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +47,7 @@ public class DetailActivity extends AppCompatActivity {
         mMovieVoteAvg = findViewById(R.id.tv_movie_voteAvg);
         mMovieReleaseDate = findViewById(R.id.tv_movie_release_date);
         mErrorMessageDisplay = findViewById(R.id.tv_error_message_display);
+        mLinearLayout = findViewById(R.id.ll_reviews);
 
         Intent intentThatStartedThisActivity = getIntent();
         Movie movie = intentThatStartedThisActivity.getParcelableExtra(Intent.EXTRA_TEXT);
@@ -53,7 +60,6 @@ public class DetailActivity extends AppCompatActivity {
         mMovieVoteAvg.setText(String.valueOf(movie.getVoteAvg()));
         mMovieReleaseDate.setText(movie.getReleaseDate());
 
-
         mTrailerRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_movie_trailer);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         mTrailerRecyclerView.setLayoutManager(linearLayoutManager);
@@ -62,8 +68,11 @@ public class DetailActivity extends AppCompatActivity {
         mTrailerAdapter = new MovieTrailerAdapter();
         mTrailerRecyclerView.setAdapter(mTrailerAdapter);
 
-        movieVideoFetcher = new MovieVideoFetcher(this, movie, mTrailerAdapter);
+        mMovieVideoFetcher = new MovieVideoFetcher(this, movie, mTrailerAdapter);
         loadMovieVideoData();
+
+        mMovieReviewFetcher = new MovieReviewFetcher(this, movie, mLinearLayout);
+        loadMovieReviewData();
     }
 
     /**
@@ -84,7 +93,15 @@ public class DetailActivity extends AppCompatActivity {
 
     private void loadMovieVideoData() {
         if (isOnline()) {
-            getSupportLoaderManager().initLoader(TRAILER_LOADER_ID, null, movieVideoFetcher);
+            getSupportLoaderManager().initLoader(TRAILER_LOADER_ID, null, mMovieVideoFetcher);
+        } else {
+            showErrorMessage();
+        }
+    }
+
+    private void loadMovieReviewData() {
+        if (isOnline()) {
+            getSupportLoaderManager().initLoader(REVIEW_LOADER_ID, null, mMovieReviewFetcher);
         } else {
             showErrorMessage();
         }
