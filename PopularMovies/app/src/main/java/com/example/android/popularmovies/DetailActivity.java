@@ -1,6 +1,7 @@
 package com.example.android.popularmovies;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -12,10 +13,14 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.example.android.popularmovies.database.AppDatabase;
+import com.example.android.popularmovies.database.MovieEntry;
 import com.example.android.popularmovies.model.Movie;
+import com.example.android.popularmovies.utilities.AppExecutors;
 import com.example.android.popularmovies.utilities.MovieReviewFetcher;
 import com.example.android.popularmovies.utilities.MovieVideoFetcher;
 import com.squareup.picasso.Picasso;
+
 
 public class DetailActivity extends AppCompatActivity {
 
@@ -36,6 +41,9 @@ public class DetailActivity extends AppCompatActivity {
     private MovieReviewFetcher mMovieReviewFetcher;
     private static final int REVIEW_LOADER_ID = 2;
 
+    private ImageView mFavoriteImageView;
+    private AppDatabase mDb;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,7 +58,7 @@ public class DetailActivity extends AppCompatActivity {
         mLinearLayout = findViewById(R.id.ll_reviews);
 
         Intent intentThatStartedThisActivity = getIntent();
-        Movie movie = intentThatStartedThisActivity.getParcelableExtra(Intent.EXTRA_TEXT);
+        final Movie movie = intentThatStartedThisActivity.getParcelableExtra(Intent.EXTRA_TEXT);
         mMovieTitle.setText(movie.getTitle());
 
         String posterPath = BASE_POSTER_PATH + movie.getPosterPath();
@@ -73,6 +81,60 @@ public class DetailActivity extends AppCompatActivity {
 
         mMovieReviewFetcher = new MovieReviewFetcher(this, movie, mLinearLayout);
         loadMovieReviewData();
+
+        mDb = AppDatabase.getsInstance(getApplicationContext());
+        mFavoriteImageView = findViewById(R.id.iv_image_star);
+        final ColorStateList oroginalColor = mFavoriteImageView.getImageTintList();
+        final ColorStateList favoriteColor = ColorStateList.valueOf(getResources().getColor(R.color.colorPink));
+
+        // Set initial color for mFavoriteImageView
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                final MovieEntry movieAdded = mDb.movieDao().selectByMovieId(movie.getColumnId());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (movieAdded != null) {
+                            mFavoriteImageView.setImageTintList(favoriteColor);
+                        } else {
+                            mFavoriteImageView.setImageTintList(oroginalColor);
+                        }
+                    }
+                });
+            }
+        });
+
+        // Handle click for mFavoriteImageView
+        mFavoriteImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        MovieEntry movieAdded = mDb.movieDao().selectByMovieId(movie.getColumnId());
+                        if (movieAdded != null) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mFavoriteImageView.setImageTintList(oroginalColor);
+                                }
+                            });
+                            mDb.movieDao().deleteMovie(movieAdded);
+                        } else {
+                            movieAdded = new MovieEntry(movie.getColumnId(), movie.getTitle(), movie.getVoteAvg(), movie.getPosterPath(), movie.getOverview(), movie.getReleaseDate());
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mFavoriteImageView.setImageTintList(favoriteColor);
+                                }
+                            });
+                            mDb.movieDao().insertMovie(movieAdded);
+                        }
+                    }
+                });
+            }
+        });
     }
 
     /**

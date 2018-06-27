@@ -35,6 +35,15 @@ public class Movie implements Parcelable {
         this.releaseDate = releaseDate;
     }
 
+    public Movie(int columnId, double voteAvg, String title, String posterPath, String overview, String releaseDate) {
+        this.columnId = columnId;
+        this.voteAvg = voteAvg;
+        this.title = title;
+        this.posterPath = posterPath;
+        this.overview = overview;
+        this.releaseDate = releaseDate;
+    }
+
     protected Movie(Parcel in) {
         voteCount = in.readInt();
         columnId = in.readInt();

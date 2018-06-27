@@ -49,6 +49,15 @@
                 android:paddingTop="@dimen/padding_5"
                 />
 
+            <ImageView
+                android:id="@+id/iv_image_star"
+                android:layout_width="@dimen/image_width_30"
+                android:layout_height="@dimen/image_height_30"
+                android:paddingTop="@dimen/padding_5"
+                app:layout_constraintLeft_toRightOf="@+id/vertical_middle"
+                android:src="@drawable/baseline_favorite_black_18dp"
+                />
+
             <TextView
                 android:id="@+id/tv_movie_release_date"
                 android:layout_width="wrap_content"
@@ -56,6 +65,7 @@
                 android:textSize="@dimen/text_sz_medium"
                 android:paddingTop="@dimen/padding_5"
                 app:layout_constraintLeft_toRightOf="@+id/vertical_middle"
+                app:layout_constraintTop_toBottomOf="@+id/iv_image_star"
                 tools:text="Movie release date"
                 />
 
@@ -124,8 +134,8 @@
                 android:text="@string/error_message"
                 android:textSize="@dimen/text_sz_medium"
                 android:visibility="invisible"
-                app:layout_constraintLeft_toRightOf="@id/tv_trailer_title"
-                app:layout_constraintTop_toBottomOf="@id/tv_trailer_title"
+                app:layout_constraintLeft_toRightOf="@+id/tv_trailer_title"
+                app:layout_constraintTop_toBottomOf="@+id/tv_trailer_title"
                 />
 
         </android.support.constraint.ConstraintLayout>

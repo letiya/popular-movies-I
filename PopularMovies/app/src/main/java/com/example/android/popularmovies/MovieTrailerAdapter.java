@@ -13,6 +13,9 @@ import java.util.List;
 
 public class MovieTrailerAdapter extends RecyclerView.Adapter<MovieTrailerAdapter.MovieTrailerAdapterViewHolder> {
 
+    private static final String APP_YOUTUBE_BASE_URL = "vnd.youtube:";
+    private static final String WEB_YOUTUBE_BASE_URL = "http://www.youtube.com/watch?v=";
+
     private String[] mTrailerTitles;
     private List<String> mTrailerKeys;
     private Context mContext;
@@ -41,9 +44,8 @@ public class MovieTrailerAdapter extends RecyclerView.Adapter<MovieTrailerAdapte
      * @param key
      */
     public static void watchYoutubeVideo(Context context, String key){
-        Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + key));
-        Intent webIntent = new Intent(Intent.ACTION_VIEW,
-                Uri.parse("http://www.youtube.com/watch?v=" + key));
+        Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(APP_YOUTUBE_BASE_URL + key));
+        Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(WEB_YOUTUBE_BASE_URL + key));
         try {
             context.startActivity(appIntent);
         } catch (Exception ex) {

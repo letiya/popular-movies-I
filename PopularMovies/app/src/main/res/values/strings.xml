@@ -12,9 +12,11 @@
 
     <string name="pref_sorting_label_popular">Most popular</string>
     <string name="pref_sorting_label_top_rated">Top rated</string>
+    <string name="pref_sorting_label_favorite">Favorite</string>
 
     <string name="pref_sorting_popular">most popular</string>
     <string name="pref_sorting_top_rated">top rated</string>
+    <string name="pref_sorting_favorite">favorite</string>
     
     <string name="trailers">Trailers: </string>
     <string name="reviews">Reviews: </string>

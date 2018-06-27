@@ -1,15 +1,21 @@
 package com.example.android.popularmovies.utilities;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 
 import com.example.android.popularmovies.MovieAdapter;
+import com.example.android.popularmovies.R;
+import com.example.android.popularmovies.database.AppDatabase;
+import com.example.android.popularmovies.database.MovieEntry;
 import com.example.android.popularmovies.model.Movie;
 
 import java.net.URL;
+import java.util.List;
 
 public class MovieFetcher implements LoaderManager.LoaderCallbacks<Movie[]> {
 
@@ -55,9 +61,26 @@ public class MovieFetcher implements LoaderManager.LoaderCallbacks<Movie[]> {
             @Override
             public Movie[] loadInBackground() {
                 try {
-                    URL movieRequestUrl = NetworkUtils.buildMovieSummaryUrl(mContext);
-                    String jsonMovieResponse = NetworkUtils.getResponseFromHttpUrl(movieRequestUrl);
-                    Movie[] movies = MovieJsonUtils.parseMovieJson(jsonMovieResponse);
+                    Movie[] movies = null;
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+                    String keyForSorting = mContext.getString(R.string.pref_sorting_key);
+                    String defaultSorting = mContext.getString(R.string.pref_sorting_top_rated);
+                    String preferredSorting = sharedPreferences.getString(keyForSorting, defaultSorting);
+                    String favorite = mContext.getString(R.string.pref_sorting_favorite);
+                    if (preferredSorting.equals(favorite)) {
+                        AppDatabase mDb = AppDatabase.getsInstance(mContext);
+                        List<MovieEntry> movieEntries = mDb.movieDao().loadAllMovies();
+                        movies = new Movie[movieEntries.size()];
+                        for (int i = 0; i < movieEntries.size(); i++) {
+                            MovieEntry movieEntry = movieEntries.get(i);
+                            Movie movie = new Movie(movieEntry.getId(), movieEntry.getVoteAvg(), movieEntry.getTitle(), movieEntry.getPosterPath(), movieEntry.getOverview(), movieEntry.getReleaseDate());
+                            movies[i] = movie;
+                        }
+                    } else {
+                        URL movieRequestUrl = NetworkUtils.buildMovieSummaryUrl(mContext);
+                        String jsonMovieResponse = NetworkUtils.getResponseFromHttpUrl(movieRequestUrl);
+                        movies = MovieJsonUtils.parseMovieJson(jsonMovieResponse);
+                    }
                     return movies;
                 } catch (Exception e) {
                     e.printStackTrace();
