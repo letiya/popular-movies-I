@@ -1,9 +1,12 @@
 package com.example.android.popularmovies;
 
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.Observer;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -16,8 +19,13 @@ import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.TextView;
 
+import com.example.android.popularmovies.database.AppDatabase;
+import com.example.android.popularmovies.database.MovieEntry;
 import com.example.android.popularmovies.model.Movie;
+import com.example.android.popularmovies.utilities.AppExecutors;
 import com.example.android.popularmovies.utilities.MovieFetcher;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterOnClickHandler, SharedPreferences.OnSharedPreferenceChangeListener, MovieFetcher.MovieFetcherDisplayHandler {
 
@@ -29,6 +37,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
     private MovieFetcher mMovieFetcher;
     private static final int MOVIE_LOADER_ID = 0;
+
+    private Movie[] mFavoriteMovies;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         mRecyclerView.setAdapter(mMovieAdapter);
 
         mMovieFetcher = new MovieFetcher(this, mMovieAdapter, this);
+
+        loadFavoriteMovieData();
         loadMovieData();
 
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
@@ -130,11 +142,49 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     }
 
     private void loadMovieData() {
-        if (isOnline()) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String keyForSorting = this.getString(R.string.pref_sorting_key);
+        String defaultSorting = this.getString(R.string.pref_sorting_top_rated);
+        String preferredSorting = sharedPreferences.getString(keyForSorting, defaultSorting);
+        String favorite = this.getString(R.string.pref_sorting_favorite);
+        if (preferredSorting.equals(favorite)) {
+            mMovieAdapter.setmMovieData(mFavoriteMovies);
+        } else if (isOnline()) {
             getSupportLoaderManager().initLoader(MOVIE_LOADER_ID, null, mMovieFetcher);
         } else {
             showErrorMessage();
         }
+    }
+
+    private void loadFavoriteMovieData() {
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                AppDatabase mDb = AppDatabase.getsInstance(MainActivity.this);
+                LiveData<List<MovieEntry>> movieEntries = mDb.movieDao().loadAllMovies();
+                movieEntries.observe(MainActivity.this, new Observer<List<MovieEntry>>() {
+                    @Override
+                    public void onChanged(@Nullable List<MovieEntry> movieEntries) {
+                        if (movieEntries == null || movieEntries.size() == 0) {
+                            mFavoriteMovies = null;
+                            return;
+                        }
+                        mFavoriteMovies = new Movie[movieEntries.size()];
+                        for (int i = 0; i < movieEntries.size(); i++) {
+                            MovieEntry movieEntry = movieEntries.get(i);
+                            Movie movie = new Movie(movieEntry.getId(), movieEntry.getVoteAvg(), movieEntry.getTitle(), movieEntry.getPosterPath(), movieEntry.getOverview(), movieEntry.getReleaseDate());
+                            mFavoriteMovies[i] = movie;
+                        }
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mMovieAdapter.setmMovieData(mFavoriteMovies);
+                            }
+                        });
+                    }
+                });
+            }
+        });
     }
 
     @Override

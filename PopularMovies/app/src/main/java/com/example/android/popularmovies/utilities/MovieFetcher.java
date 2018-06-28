@@ -10,12 +10,9 @@ import android.support.v4.content.Loader;
 
 import com.example.android.popularmovies.MovieAdapter;
 import com.example.android.popularmovies.R;
-import com.example.android.popularmovies.database.AppDatabase;
-import com.example.android.popularmovies.database.MovieEntry;
 import com.example.android.popularmovies.model.Movie;
 
 import java.net.URL;
-import java.util.List;
 
 public class MovieFetcher implements LoaderManager.LoaderCallbacks<Movie[]> {
 
@@ -23,6 +20,8 @@ public class MovieFetcher implements LoaderManager.LoaderCallbacks<Movie[]> {
     private MovieAdapter mMovieAdapter;
     private final MovieFetcherDisplayHandler mDisplayHandler;
     private boolean isSortingChanged;
+
+    private boolean mSortByFavorite = false;
 
     public MovieFetcher(Context context, MovieAdapter movieAdapter, MovieFetcherDisplayHandler handler) {
         mContext = context;
@@ -67,19 +66,13 @@ public class MovieFetcher implements LoaderManager.LoaderCallbacks<Movie[]> {
                     String defaultSorting = mContext.getString(R.string.pref_sorting_top_rated);
                     String preferredSorting = sharedPreferences.getString(keyForSorting, defaultSorting);
                     String favorite = mContext.getString(R.string.pref_sorting_favorite);
-                    if (preferredSorting.equals(favorite)) {
-                        AppDatabase mDb = AppDatabase.getsInstance(mContext);
-                        List<MovieEntry> movieEntries = mDb.movieDao().loadAllMovies();
-                        movies = new Movie[movieEntries.size()];
-                        for (int i = 0; i < movieEntries.size(); i++) {
-                            MovieEntry movieEntry = movieEntries.get(i);
-                            Movie movie = new Movie(movieEntry.getId(), movieEntry.getVoteAvg(), movieEntry.getTitle(), movieEntry.getPosterPath(), movieEntry.getOverview(), movieEntry.getReleaseDate());
-                            movies[i] = movie;
-                        }
-                    } else {
+                    if (!preferredSorting.equals(favorite)) {
+                        mSortByFavorite = false;
                         URL movieRequestUrl = NetworkUtils.buildMovieSummaryUrl(mContext);
                         String jsonMovieResponse = NetworkUtils.getResponseFromHttpUrl(movieRequestUrl);
                         movies = MovieJsonUtils.parseMovieJson(jsonMovieResponse);
+                    } else {
+                        mSortByFavorite = true;
                     }
                     return movies;
                 } catch (Exception e) {
@@ -99,11 +92,13 @@ public class MovieFetcher implements LoaderManager.LoaderCallbacks<Movie[]> {
 
     @Override
     public void onLoadFinished(Loader<Movie[]> loader, Movie[] data) {
-        mMovieAdapter.setmMovieData(data);
-        if (data == null) {
-            mDisplayHandler.showErrorMessage();
-        } else {
-            mDisplayHandler.showMovieDataView();
+        if (!mSortByFavorite) {
+            mMovieAdapter.setmMovieData(data);
+            if (data == null) {
+                mDisplayHandler.showErrorMessage();
+            } else {
+                mDisplayHandler.showMovieDataView();
+            }
         }
     }
 
