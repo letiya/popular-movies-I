@@ -1,7 +1,7 @@
 package com.example.android.popularmovies;
 
-import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
@@ -19,10 +19,9 @@ import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.TextView;
 
-import com.example.android.popularmovies.database.AppDatabase;
 import com.example.android.popularmovies.database.MovieEntry;
 import com.example.android.popularmovies.model.Movie;
-import com.example.android.popularmovies.utilities.AppExecutors;
+import com.example.android.popularmovies.utilities.MainViewModel;
 import com.example.android.popularmovies.utilities.MovieFetcher;
 
 import java.util.List;
@@ -61,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
         mMovieFetcher = new MovieFetcher(this, mMovieAdapter, this);
 
-        loadFavoriteMovieData();
+        setupViewModel();
         loadMovieData();
 
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
@@ -156,31 +155,25 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         }
     }
 
-    private void loadFavoriteMovieData() {
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+    private void setupViewModel() {
+        MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        viewModel.getMovies().observe(this, new Observer<List<MovieEntry>>() {
             @Override
-            public void run() {
-                AppDatabase mDb = AppDatabase.getsInstance(MainActivity.this);
-                LiveData<List<MovieEntry>> movieEntries = mDb.movieDao().loadAllMovies();
-                movieEntries.observe(MainActivity.this, new Observer<List<MovieEntry>>() {
+            public void onChanged(@Nullable List<MovieEntry> movieEntries) {
+                if (movieEntries == null || movieEntries.size() == 0) {
+                    mFavoriteMovies = null;
+                    return;
+                }
+                mFavoriteMovies = new Movie[movieEntries.size()];
+                for (int i = 0; i < movieEntries.size(); i++) {
+                    MovieEntry movieEntry = movieEntries.get(i);
+                    Movie movie = new Movie(movieEntry.getId(), movieEntry.getVoteAvg(), movieEntry.getTitle(), movieEntry.getPosterPath(), movieEntry.getOverview(), movieEntry.getReleaseDate());
+                    mFavoriteMovies[i] = movie;
+                }
+                runOnUiThread(new Runnable() {
                     @Override
-                    public void onChanged(@Nullable List<MovieEntry> movieEntries) {
-                        if (movieEntries == null || movieEntries.size() == 0) {
-                            mFavoriteMovies = null;
-                            return;
-                        }
-                        mFavoriteMovies = new Movie[movieEntries.size()];
-                        for (int i = 0; i < movieEntries.size(); i++) {
-                            MovieEntry movieEntry = movieEntries.get(i);
-                            Movie movie = new Movie(movieEntry.getId(), movieEntry.getVoteAvg(), movieEntry.getTitle(), movieEntry.getPosterPath(), movieEntry.getOverview(), movieEntry.getReleaseDate());
-                            mFavoriteMovies[i] = movie;
-                        }
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mMovieAdapter.setmMovieData(mFavoriteMovies);
-                            }
-                        });
+                    public void run() {
+                        mMovieAdapter.setmMovieData(mFavoriteMovies);
                     }
                 });
             }

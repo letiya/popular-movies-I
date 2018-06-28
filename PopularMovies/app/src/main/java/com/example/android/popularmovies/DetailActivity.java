@@ -82,7 +82,7 @@ public class DetailActivity extends AppCompatActivity {
         mMovieReviewFetcher = new MovieReviewFetcher(this, movie, mLinearLayout);
         loadMovieReviewData();
 
-        mDb = AppDatabase.getsInstance(getApplicationContext());
+        mDb = AppDatabase.getInstance(getApplicationContext());
         mFavoriteImageView = findViewById(R.id.iv_image_star);
         final ColorStateList oroginalColor = mFavoriteImageView.getImageTintList();
         final ColorStateList favoriteColor = ColorStateList.valueOf(getResources().getColor(R.color.colorPink));
@@ -91,17 +91,23 @@ public class DetailActivity extends AppCompatActivity {
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
             public void run() {
-                final MovieEntry movieAdded = mDb.movieDao().selectByMovieId(movie.getColumnId());
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (movieAdded != null) {
+                MovieEntry movieAdded = mDb.movieDao().selectByMovieId(movie.getColumnId());
+
+                if (movieAdded != null) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
                             mFavoriteImageView.setImageTintList(favoriteColor);
-                        } else {
+                        }
+                    });
+                } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
                             mFavoriteImageView.setImageTintList(oroginalColor);
                         }
-                    }
-                });
+                    });
+                }
             }
         });
 
