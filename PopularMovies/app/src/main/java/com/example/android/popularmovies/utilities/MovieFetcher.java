@@ -67,12 +67,12 @@ public class MovieFetcher implements LoaderManager.LoaderCallbacks<Movie[]> {
                     String preferredSorting = sharedPreferences.getString(keyForSorting, defaultSorting);
                     String favorite = mContext.getString(R.string.pref_sorting_favorite);
                     if (!preferredSorting.equals(favorite)) {
-                        mSortByFavorite = false;
+//                        mSortByFavorite = false;
                         URL movieRequestUrl = NetworkUtils.buildMovieSummaryUrl(mContext);
                         String jsonMovieResponse = NetworkUtils.getResponseFromHttpUrl(movieRequestUrl);
                         movies = MovieJsonUtils.parseMovieJson(jsonMovieResponse);
                     } else {
-                        mSortByFavorite = true;
+//                        mSortByFavorite = true;
                     }
                     return movies;
                 } catch (Exception e) {
@@ -82,19 +82,30 @@ public class MovieFetcher implements LoaderManager.LoaderCallbacks<Movie[]> {
             }
 
             @Override
-            public void deliverResult(Movie[] data) {
-                mMovieData = data;
-                super.deliverResult(data);
+            public void deliverResult(Movie[] movies) {
+                mMovieData = movies;
+                super.deliverResult(movies);
             }
 
         };
     }
 
     @Override
-    public void onLoadFinished(Loader<Movie[]> loader, Movie[] data) {
+    public void onLoadFinished(Loader<Movie[]> loader, Movie[] movies) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        String keyForSorting = mContext.getString(R.string.pref_sorting_key);
+        String defaultSorting = mContext.getString(R.string.pref_sorting_top_rated);
+        String preferredSorting = sharedPreferences.getString(keyForSorting, defaultSorting);
+        String favorite = mContext.getString(R.string.pref_sorting_favorite);
+        if (!preferredSorting.equals(favorite)) {
+            mSortByFavorite = false;
+        } else {
+            mSortByFavorite = true;
+        }
+
         if (!mSortByFavorite) {
-            mMovieAdapter.setmMovieData(data);
-            if (data == null) {
+            mMovieAdapter.setmMovieData(movies);
+            if (movies == null) {
                 mDisplayHandler.showErrorMessage();
             } else {
                 mDisplayHandler.showMovieDataView();
