@@ -162,13 +162,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
             public void onChanged(@Nullable List<MovieEntry> movieEntries) {
                 if (movieEntries == null || movieEntries.size() == 0) {
                     mFavoriteMovies = null;
-                    return;
-                }
-                mFavoriteMovies = new Movie[movieEntries.size()];
-                for (int i = 0; i < movieEntries.size(); i++) {
-                    MovieEntry movieEntry = movieEntries.get(i);
-                    Movie movie = new Movie(movieEntry.getId(), movieEntry.getVoteAvg(), movieEntry.getTitle(), movieEntry.getPosterPath(), movieEntry.getOverview(), movieEntry.getReleaseDate());
-                    mFavoriteMovies[i] = movie;
+                } else {
+                    mFavoriteMovies = new Movie[movieEntries.size()];
+                    for (int i = 0; i < movieEntries.size(); i++) {
+                        MovieEntry movieEntry = movieEntries.get(i);
+                        Movie movie = new Movie(movieEntry.getId(), movieEntry.getVoteAvg(), movieEntry.getTitle(), movieEntry.getPosterPath(), movieEntry.getOverview(), movieEntry.getReleaseDate());
+                        mFavoriteMovies[i] = movie;
+                    }
                 }
                 runOnUiThread(new Runnable() {
                     @Override
